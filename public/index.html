@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Send a formatted email to recipients imported from Excel."
+    />
+    <title>Nellai Mass Foods · Email Campaign</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Nellai Mass Foods home">
+          <span class="brand-mark">NM</span>
+          <span>
+            <strong>Nellai Mass Foods</strong>
+            <small>Campaign sender</small>
+          </span>
+        </a>
+        <span class="secure-note"><span class="status-dot"></span> Credentials stay in memory only</span>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div>
+            <p class="eyebrow">EMAIL CAMPAIGN</p>
+            <h1>Reach your contacts,<br /><em>one email at a time.</em></h1>
+            <p class="hero-copy">
+              Import an Excel list, create your message, and safely send to up to
+              50 recipients per campaign.
+            </p>
+          </div>
+          <div class="limit-card">
+            <span>CAMPAIGN LIMIT</span>
+            <strong>50</strong>
+            <small>recipients per run</small>
+          </div>
+        </section>
+
+        <form id="campaign-form">
+          <section class="card">
+            <div class="section-heading">
+              <span class="step">01</span>
+              <div>
+                <h2>Sender details</h2>
+                <p>Use an app password—not your regular account password.</p>
+              </div>
+            </div>
+
+            <div class="field-grid">
+              <label class="field">
+                <span>Email provider</span>
+                <select id="provider" required>
+                  <option value="gmail">Gmail / Google Workspace</option>
+                  <option value="hotmail">Outlook / Microsoft 365</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Sender email</span>
+                <input
+                  id="sender-email"
+                  type="email"
+                  autocomplete="username"
+                  placeholder="you@company.com"
+                  required
+                />
+              </label>
+              <label class="field">
+                <span>App password</span>
+                <span class="password-wrap">
+                  <input
+                    id="app-password"
+                    type="password"
+                    autocomplete="current-password"
+                    placeholder="Enter your app password"
+                    required
+                  />
+                  <button id="toggle-password" type="button" class="text-button">Show</button>
+                </span>
+              </label>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="section-heading">
+              <span class="step">02</span>
+              <div>
+                <h2>Build your message</h2>
+                <p>Write and format the email your contacts will receive.</p>
+              </div>
+            </div>
+
+            <label class="field subject-field">
+              <span>Subject line</span>
+              <input
+                id="subject"
+                type="text"
+                maxlength="200"
+                placeholder="A short, clear subject"
+                required
+              />
+            </label>
+
+            <div class="field">
+              <span>Mail content</span>
+              <div class="editor-shell">
+                <div class="toolbar" role="toolbar" aria-label="Text formatting">
+                  <button type="button" data-command="bold" title="Bold"><strong>B</strong></button>
+                  <button type="button" data-command="italic" title="Italic"><em>I</em></button>
+                  <button type="button" data-command="underline" title="Underline"><u>U</u></button>
+                  <span class="toolbar-divider"></span>
+                  <button type="button" data-command="insertUnorderedList" title="Bullet list">• List</button>
+                  <button type="button" data-command="createLink" title="Add link">Link</button>
+                  <button type="button" data-command="removeFormat" title="Clear formatting">Clear</button>
+                </div>
+                <div
+                  id="editor"
+                  class="editor"
+                  contenteditable="true"
+                  role="textbox"
+                  aria-multiline="true"
+                  data-placeholder="Write your email message here…"
+                ></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="section-heading">
+              <span class="step">03</span>
+              <div>
+                <h2>Import recipients</h2>
+                <p>Your first worksheet must contain a column named “Email”.</p>
+              </div>
+            </div>
+
+            <input id="file-input" type="file" accept=".xlsx" hidden />
+            <button id="upload-zone" class="upload-zone" type="button">
+              <span class="upload-icon">↑</span>
+              <span><strong>Choose an Excel file</strong><small>.xlsx · maximum 5 MB</small></span>
+            </button>
+
+            <div id="import-summary" class="import-summary hidden">
+              <div>
+                <strong id="file-name">Recipients.xlsx</strong>
+                <span id="import-detail"></span>
+              </div>
+              <button id="change-file" type="button" class="text-button">Change file</button>
+            </div>
+
+            <div id="recipient-preview" class="recipient-preview hidden">
+              <div class="preview-heading">
+                <strong>Selected recipients</strong>
+                <span id="recipient-count">0 / 50</span>
+              </div>
+              <div id="email-chips" class="email-chips"></div>
+            </div>
+
+            <div class="attachment-field">
+              <div>
+                <strong>Attachment <span>(optional)</span></strong>
+                <small>One file, maximum 10 MB. Executable and script files are blocked.</small>
+              </div>
+              <input id="attachment-input" type="file" hidden />
+              <button id="attachment-button" class="secondary-button" type="button">
+                Add attachment
+              </button>
+            </div>
+            <div id="attachment-summary" class="attachment-summary hidden">
+              <div>
+                <strong id="attachment-name"></strong>
+                <span id="attachment-size"></span>
+              </div>
+              <button id="remove-attachment" type="button" class="text-button">Remove</button>
+            </div>
+          </section>
+
+          <div id="form-alert" class="alert hidden" role="alert"></div>
+
+          <div class="send-bar">
+            <div>
+              <strong>Ready to send?</strong>
+              <span>Emails are sent sequentially to protect deliverability.</span>
+            </div>
+            <button id="send-button" class="primary-button" type="submit" disabled>
+              Send campaign
+              <span>→</span>
+            </button>
+          </div>
+        </form>
+
+        <section id="progress-card" class="card progress-card hidden" aria-live="polite">
+          <div class="section-heading progress-heading">
+            <span class="step">04</span>
+            <div>
+              <h2>Campaign progress</h2>
+              <p id="progress-message">Preparing your campaign…</p>
+            </div>
+            <button id="cancel-button" type="button" class="secondary-button">Cancel</button>
+          </div>
+
+          <div class="progress-track"><span id="progress-bar"></span></div>
+          <div class="stats">
+            <div><span>Processed</span><strong id="processed-count">0</strong></div>
+            <div class="success-stat"><span>Successful</span><strong id="success-count">0</strong></div>
+            <div class="failure-stat"><span>Failed</span><strong id="failure-count">0</strong></div>
+            <div><span>Total</span><strong id="total-count">0</strong></div>
+          </div>
+          <div id="results-list" class="results-list"></div>
+        </section>
+      </main>
+
+      <footer>Built for responsible outreach · Always email contacts who have opted in.</footer>
+    </div>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

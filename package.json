@@ -1,0 +1,22 @@
+{
+  "name": "nellai-mass-foods-email-sender",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Send an HTML email to up to 50 recipients imported from Excel.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "multer": "^2.0.2",
+    "nodemailer": "^10.0.1",
+    "read-excel-file": "^9.3.10",
+    "sanitize-html": "^2.17.7"
+  }
+}
