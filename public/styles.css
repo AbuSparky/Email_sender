@@ -247,6 +247,27 @@ form {
   gap: 18px;
 }
 
+.smtp-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.smtp-grid .field:nth-child(1) {
+  grid-column: span 3;
+}
+
+.smtp-grid .field:nth-child(2) {
+  grid-column: span 1;
+}
+
+.smtp-grid .field:nth-child(3) {
+  grid-column: span 2;
+}
+
+.smtp-grid .field:nth-child(4),
+.smtp-grid .field:nth-child(5) {
+  grid-column: span 3;
+}
+
 .field {
   display: grid;
   gap: 8px;
@@ -675,6 +696,10 @@ footer {
 
   .field-grid {
     grid-template-columns: 1fr;
+  }
+
+  .smtp-grid .field {
+    grid-column: 1;
   }
 }
 

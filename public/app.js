@@ -3,9 +3,11 @@ const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 
 const elements = {
   form: document.querySelector("#campaign-form"),
-  provider: document.querySelector("#provider"),
-  senderEmail: document.querySelector("#sender-email"),
-  appPassword: document.querySelector("#app-password"),
+  smtpHost: document.querySelector("#smtp-host"),
+  smtpPort: document.querySelector("#smtp-port"),
+  smtpSecure: document.querySelector("#smtp-secure"),
+  smtpUser: document.querySelector("#smtp-user"),
+  smtpPassword: document.querySelector("#smtp-password"),
   togglePassword: document.querySelector("#toggle-password"),
   subject: document.querySelector("#subject"),
   editor: document.querySelector("#editor"),
@@ -176,7 +178,7 @@ function finishCampaign(campaign) {
   campaignId = null;
   elements.form.removeAttribute("aria-busy");
   elements.cancelButton.disabled = true;
-  elements.appPassword.value = "";
+  elements.smtpPassword.value = "";
   updateSendButton();
   if (eventSource) {
     eventSource.close();
@@ -234,8 +236,8 @@ document.querySelectorAll("[data-command]").forEach((button) => {
 });
 
 elements.togglePassword.addEventListener("click", () => {
-  const reveal = elements.appPassword.type === "password";
-  elements.appPassword.type = reveal ? "text" : "password";
+  const reveal = elements.smtpPassword.type === "password";
+  elements.smtpPassword.type = reveal ? "text" : "password";
   elements.togglePassword.textContent = reveal ? "Hide" : "Show";
 });
 
@@ -310,9 +312,11 @@ elements.form.addEventListener("submit", async (event) => {
   });
 
   const data = new FormData();
-  data.append("provider", elements.provider.value);
-  data.append("senderEmail", elements.senderEmail.value.trim());
-  data.append("appPassword", elements.appPassword.value.trim());
+  data.append("smtpHost", elements.smtpHost.value.trim());
+  data.append("smtpPort", elements.smtpPort.value);
+  data.append("smtpSecure", elements.smtpSecure.value);
+  data.append("smtpUser", elements.smtpUser.value.trim());
+  data.append("smtpPassword", elements.smtpPassword.value.trim());
   data.append("subject", elements.subject.value.trim());
   data.append("html", elements.editor.innerHTML);
   data.append("recipients", JSON.stringify(recipients));

@@ -45,37 +45,66 @@
             <div class="section-heading">
               <span class="step">01</span>
               <div>
-                <h2>Sender details</h2>
-                <p>Use an app password—not your regular account password.</p>
+                <h2>SMTP sender details</h2>
+                <p>Enter the SMTP settings supplied by your email provider.</p>
               </div>
             </div>
 
-            <div class="field-grid">
+            <div class="field-grid smtp-grid">
               <label class="field">
-                <span>Email provider</span>
-                <select id="provider" required>
-                  <option value="gmail">Gmail / Google Workspace</option>
-                  <option value="hotmail">Outlook / Microsoft 365</option>
-                </select>
+                <span>SMTP host</span>
+                <input
+                  id="smtp-host"
+                  type="text"
+                  value="smtp.gmail.com"
+                  list="smtp-host-options"
+                  placeholder="smtp.gmail.com"
+                  autocomplete="off"
+                  required
+                />
+                <datalist id="smtp-host-options">
+                  <option value="smtp.gmail.com"></option>
+                  <option value="smtp.office365.com"></option>
+                  <option value="smtp-mail.outlook.com"></option>
+                </datalist>
               </label>
               <label class="field">
-                <span>Sender email</span>
+                <span>SMTP port</span>
                 <input
-                  id="sender-email"
-                  type="email"
-                  autocomplete="username"
-                  placeholder="you@company.com"
+                  id="smtp-port"
+                  type="number"
+                  value="465"
+                  min="1"
+                  max="65535"
+                  inputmode="numeric"
                   required
                 />
               </label>
               <label class="field">
-                <span>App password</span>
+                <span>Connection security</span>
+                <select id="smtp-secure" required>
+                  <option value="true">SSL/TLS (usually port 465)</option>
+                  <option value="false">STARTTLS (usually port 587)</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>SMTP username / sender email</span>
+                <input
+                  id="smtp-user"
+                  type="email"
+                  autocomplete="username"
+                  placeholder="yourgmail@gmail.com"
+                  required
+                />
+              </label>
+              <label class="field">
+                <span>SMTP password / app password</span>
                 <span class="password-wrap">
                   <input
-                    id="app-password"
+                    id="smtp-password"
                     type="password"
                     autocomplete="current-password"
-                    placeholder="Enter your app password"
+                    placeholder="Enter your SMTP password"
                     required
                   />
                   <button id="toggle-password" type="button" class="text-button">Show</button>

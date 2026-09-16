@@ -1,4 +1,5 @@
 const crypto = require("node:crypto");
+const dns = require("node:dns");
 const path = require("node:path");
 const express = require("express");
 const helmet = require("helmet");
@@ -12,6 +13,8 @@ const port = Number(process.env.PORT) || 4000;
 const maxRecipients = 50;
 const maxAttachmentSize = 10 * 1024 * 1024;
 const campaigns = new Map();
+
+dns.setDefaultResultOrder("ipv4first");
 
 app.disable("x-powered-by");
 app.use(
@@ -76,6 +79,17 @@ const attachmentUpload = multer({
 
 function isEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim());
+}
+
+function isPublicSmtpHostname(value) {
+  const hostname = String(value || "").trim().toLowerCase();
+  return (
+    hostname.length <= 253 &&
+    /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(
+      hostname,
+    ) &&
+    !hostname.endsWith(".local")
+  );
 }
 
 async function extractEmails(buffer) {
@@ -202,13 +216,23 @@ function cleanEmailHtml(html) {
 
 async function runCampaign(campaign, settings) {
   const transport = nodemailer.createTransport({
-    service: settings.provider,
-    auth: { user: settings.senderEmail, pass: settings.appPassword },
+    host: settings.smtpHost,
+    port: settings.smtpPort,
+    secure: settings.smtpSecure,
+    requireTLS: !settings.smtpSecure,
+    auth: { user: settings.smtpUser, pass: settings.smtpPassword },
     pool: true,
     maxConnections: 1,
     maxMessages: maxRecipients,
+    connectionTimeout: 20_000,
+    greetingTimeout: 15_000,
+    socketTimeout: 60_000,
     disableFileAccess: true,
     disableUrlAccess: true,
+    tls: {
+      minVersion: "TLSv1.2",
+      servername: settings.smtpHost,
+    },
   });
 
   try {
@@ -226,7 +250,7 @@ async function runCampaign(campaign, settings) {
 
       try {
         await transport.sendMail({
-          from: settings.senderEmail,
+          from: settings.smtpUser,
           to: recipient,
           subject: settings.subject,
           html: settings.html,
@@ -289,7 +313,17 @@ app.post("/api/import", upload.single("file"), async (request, response) => {
 });
 
 app.post("/api/campaigns", attachmentUpload.single("attachment"), (request, response) => {
-  const { senderEmail, appPassword, provider, subject, html } = request.body;
+  const {
+    smtpHost,
+    smtpPort,
+    smtpSecure,
+    smtpUser,
+    smtpPassword,
+    subject,
+    html,
+  } = request.body;
+  const parsedSmtpPort = Number(smtpPort);
+  const parsedSmtpSecure = smtpSecure === "true";
   let recipients;
   try {
     recipients = JSON.parse(request.body.recipients || "[]");
@@ -297,14 +331,20 @@ app.post("/api/campaigns", attachmentUpload.single("attachment"), (request, resp
     return response.status(400).json({ error: "The recipient list is invalid." });
   }
 
-  if (!isEmail(senderEmail)) {
-    return response.status(400).json({ error: "Enter a valid sender email." });
+  if (!isPublicSmtpHostname(smtpHost)) {
+    return response.status(400).json({ error: "Enter a valid public SMTP hostname." });
   }
-  if (typeof appPassword !== "string" || appPassword.trim().length < 8) {
-    return response.status(400).json({ error: "Enter a valid app password." });
+  if (!Number.isInteger(parsedSmtpPort) || parsedSmtpPort < 1 || parsedSmtpPort > 65535) {
+    return response.status(400).json({ error: "Enter a valid SMTP port." });
   }
-  if (!["gmail", "hotmail"].includes(provider)) {
-    return response.status(400).json({ error: "Choose a supported provider." });
+  if (!["true", "false"].includes(smtpSecure)) {
+    return response.status(400).json({ error: "Choose a valid SMTP security mode." });
+  }
+  if (!isEmail(smtpUser)) {
+    return response.status(400).json({ error: "Enter a valid SMTP username/email." });
+  }
+  if (typeof smtpPassword !== "string" || smtpPassword.trim().length < 8) {
+    return response.status(400).json({ error: "Enter a valid SMTP app password." });
   }
   if (typeof subject !== "string" || !subject.trim() || subject.length > 200) {
     return response.status(400).json({ error: "Enter a subject (maximum 200 characters)." });
@@ -344,9 +384,11 @@ app.post("/api/campaigns", attachmentUpload.single("attachment"), (request, resp
   response.status(202).json({ id: campaign.id });
   setImmediate(() =>
     runCampaign(campaign, {
-      senderEmail: senderEmail.trim(),
-      appPassword: appPassword.trim(),
-      provider,
+      smtpHost: smtpHost.trim().toLowerCase(),
+      smtpPort: parsedSmtpPort,
+      smtpSecure: parsedSmtpSecure,
+      smtpUser: smtpUser.trim(),
+      smtpPassword: smtpPassword.trim(),
       subject: subject.trim(),
       html: safeHtml,
       recipients: uniqueRecipients,
